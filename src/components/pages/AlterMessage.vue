@@ -45,7 +45,7 @@ export default {
   },
   created() {
       const vm=this;
-      vm.$bus.$on('message:push',(message,statue='warning')=>{
+      vm.$bus.$on('message:push',(message,status='warning')=>{
           vm.updateMessage(message,status);
       })
     // const vm = this;

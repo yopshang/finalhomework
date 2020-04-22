@@ -23,7 +23,10 @@
                     <td>{{item.category}}</td>
                     <td>{{item.title}}</td>
                     <td class="text-right">
-                    {{item.price}}
+                    {{item.price | currency}}
+                    </td>
+                      <td class="text-right">
+                    {{item.orgin_price | currency}}
                     </td>
                     <td>
                         <span v-if="item.is_enabled" class="text-sucess">啟用</span>
@@ -35,6 +38,28 @@
                 </tr>    
               </tbody>
             </table>
+            <!--以下為pagination-->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <!--以下為往上一頁-->
+                    <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Previous" :class="{'disable':!pagination.has_pre}" @click.prevent="getProducts(pagination.current_page-1)">
+                        <span aria-hidden="true" >&laquo;</span>
+                    </a>
+                    </li>
+                    <li class="page-item" v-for="page in pagination.total_pages" :key="page" :class="{'active':pagination.current.page == page}">
+                        <a class="page-link" href="#" @click.prevent="getProducts(page)">
+                        {{page}}
+                        </a>
+                    </li>
+                    <li class="page-item">
+                    <!--以上為頁碼，以下為往下一頁-->
+                    <a class="page-link" href="#" aria-label="Next" :class="{'disable':!pagination.has_next}" @click.prevent="getProducts(pagination.current_page+1)">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                    </li>
+                </ul>
+            </nav>
             <!--以下為課程提供Modal-->
             <div class="modal fade" id="productModal" tabindex="-1" role="dialog"
                 aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -126,7 +151,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" @click="updateProduct">確認</button>
+                        <button type="button" class="btn btn-primary" @click="updateProduct()">確認</button>
                     </div>
                     </div>
                 </div>
@@ -167,12 +192,13 @@ export default {
             isLoading:false,
             status:{
                 fileUploading:false
-            }
+            },
+            pagination:{},
         }
     },
     methods: {
-        getProducts(){
-            const api =`https://vue-course-api.hexschool.io/yop/api/:api_path/admin/products?page=:page`;
+        getProducts(page=1){
+            const api =`https://vue-course-api.hexschool.io/api/yop/:api_path/admin/products?page=${page}`;
             const vm = this;
             vm.isLoading=true;
             this.$http.get(api).then((response)=>{
@@ -192,11 +218,11 @@ export default {
             $('#productModal').modal('show');
         },
         updateProduct(){
-            let api=`https://vue-course-api.hexschool.io/yop//api/:api_path/admin/productd`;
+            let api=`https://vue-course-api.hexschool.io/api/yop/:api_path/admin/productd`;
             const vm=this;
             let httpMethods='post';
             if(!vm.isNew){
-                api=`https://vue-course-api.hexschool.io/yop/api/:api_path/admin/product/:id`;
+                api=`https://vue-course-api.hexschool.io/api/yop/:api_path/admin/product/:id`;
                 httpMethods='put';
             }
             this.$http[httpMethods](api,{data:vm.tempProduct}).then((response)=>{
@@ -218,7 +244,7 @@ export default {
             const vm=this;
             formData.append('file-to-Load',uploadefile);
             vm.status.fileUploading=true;
-            const url=`https://vue-course-api.hexschool.io/yop/api/:api_path/admin/upload`;
+            const url=`https://vue-course-api.hexschool.io/api/yop/:api_path/admin/upload`;
             this.$http.post(url,formData,{
                 headers:{
                     'Content-Type':'form-data'
@@ -237,7 +263,6 @@ export default {
     },
     created() {
         this.getProducts();
-        this.$bus.$emmit('message:push','這是一段訊息','success');
     },
 }
 </script>
